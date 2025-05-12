@@ -22,6 +22,7 @@ const negativeWords = [
 
 // DOM Elements
 let analyzeBtn, clearBtn, results, textInput, loadingSpinner, errorMessage, charCountDisplay, themeToggle;
+let progressContainer, progressBar;
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
@@ -41,6 +42,8 @@ function initializeElements() {
     errorMessage = document.getElementById('errorMessage');
     charCountDisplay = document.getElementById('charCountDisplay');
     themeToggle = document.getElementById('themeToggle');
+    progressContainer = document.getElementById('progressContainer');
+    progressBar = document.getElementById('progressBar');
 }
 
 // Setup event listeners
@@ -87,7 +90,7 @@ function addTooltips() {
     }
 }
 
-// Handle text analysis
+// Handle text analysis with progress
 async function handleAnalyze() {
     const text = textInput.value.trim();
     
@@ -97,7 +100,9 @@ async function handleAnalyze() {
     
     try {
         setLoading(true);
+        showProgress();
         await analyzeText(text);
+        hideProgress();
     } catch (error) {
         showError('An error occurred while analyzing the text. Please try again.');
         console.error('Analysis error:', error);
@@ -122,33 +127,71 @@ function validateInput(text) {
     return true;
 }
 
-// Analyze text
-async function analyzeText(text) {
-    // Show results container
-    results.style.display = 'block';
+// Show progress bar
+function showProgress() {
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
     
-    // Calculate and update basic metrics
-    updateBasicMetrics(text);
+    // Simulate progress
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress >= 90) {
+            clearInterval(interval);
+            progress = 90;
+        }
+        updateProgress(progress);
+    }, 200);
     
-    // Calculate and update reading level metrics
-    updateReadingMetrics(text);
-    
-    // Calculate and update sentiment analysis
-    updateSentimentAnalysis(text);
-    
-    // Calculate and update word frequency
-    updateWordFrequency(text);
+    // Store interval ID for cleanup
+    progressContainer.dataset.intervalId = interval;
 }
 
-// Update basic metrics
+// Update progress bar
+function updateProgress(progress) {
+    progressBar.style.width = `${Math.min(progress, 100)}%`;
+}
+
+// Hide progress bar
+function hideProgress() {
+    updateProgress(100);
+    setTimeout(() => {
+        progressContainer.style.display = 'none';
+        progressBar.style.width = '0%';
+        if (progressContainer.dataset.intervalId) {
+            clearInterval(parseInt(progressContainer.dataset.intervalId));
+        }
+    }, 500);
+}
+
+// Analyze text with animations
+async function analyzeText(text) {
+    // Show results container with animation
+    results.style.display = 'block';
+    setTimeout(() => results.classList.add('visible'), 50);
+    
+    // Calculate and update metrics with staggered animations
+    const metrics = [
+        () => updateBasicMetrics(text),
+        () => updateReadingMetrics(text),
+        () => updateSentimentAnalysis(text),
+        () => updateWordFrequency(text)
+    ];
+    
+    for (let i = 0; i < metrics.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        metrics[i]();
+    }
+}
+
+// Update basic metrics with animation
 function updateBasicMetrics(text) {
     const metrics = calculateBasicMetrics(text);
     
-    // Update DOM with metrics
     Object.entries(metrics).forEach(([id, value]) => {
         const element = document.getElementById(id);
         if (element) {
-            element.textContent = value;
+            animateValue(element, 0, value, 500);
         }
     });
 }
@@ -170,7 +213,26 @@ function calculateBasicMetrics(text) {
     };
 }
 
-// Update reading metrics
+// Animate numeric value
+function animateValue(element, start, end, duration) {
+    const range = end - start;
+    const increment = range / (duration / 16);
+    let current = start;
+    
+    const animate = () => {
+        current += increment;
+        if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+            element.textContent = typeof end === 'number' ? end.toFixed(2) : end;
+        } else {
+            element.textContent = typeof current === 'number' ? current.toFixed(2) : Math.round(current);
+            requestAnimationFrame(animate);
+        }
+    };
+    
+    requestAnimationFrame(animate);
+}
+
+// Update reading metrics with animation
 function updateReadingMetrics(text) {
     const words = text.match(/\b\w+\b/g) || [];
     const sentences = text.split(/[.!?]+\s*/).filter(Boolean);
@@ -181,16 +243,27 @@ function updateReadingMetrics(text) {
     const colemanLiauIndex = calculateColemanLiauIndex(text.length, words.length, sentences.length);
     const gradeLevel = determineGradeLevel(fleschKincaidGrade, colemanLiauIndex);
     
-    // Update DOM
-    document.getElementById('fleschScore').textContent = fleschScore.toFixed(1);
-    document.getElementById('fleschKincaidGrade').textContent = fleschKincaidGrade.toFixed(1);
-    document.getElementById('colemanLiauIndex').textContent = colemanLiauIndex.toFixed(1);
-    document.getElementById('gradeLevel').textContent = gradeLevel;
-    document.getElementById('readabilityInterpretation').textContent = 
-        getReadabilityInterpretation(fleschScore);
+    // Animate metrics
+    animateValue(document.getElementById('fleschScore'), 0, fleschScore, 500);
+    animateValue(document.getElementById('fleschKincaidGrade'), 0, fleschKincaidGrade, 500);
+    animateValue(document.getElementById('colemanLiauIndex'), 0, colemanLiauIndex, 500);
+    
+    // Update grade level and interpretation with fade
+    const gradeElement = document.getElementById('gradeLevel');
+    const interpretationElement = document.getElementById('readabilityInterpretation');
+    
+    gradeElement.style.opacity = '0';
+    interpretationElement.style.opacity = '0';
+    
+    setTimeout(() => {
+        gradeElement.textContent = gradeLevel;
+        interpretationElement.textContent = getReadabilityInterpretation(fleschScore);
+        gradeElement.style.opacity = '1';
+        interpretationElement.style.opacity = '1';
+    }, 250);
 }
 
-// Update sentiment analysis
+// Update sentiment analysis with animation
 function updateSentimentAnalysis(text) {
     const wordList = text.toLowerCase().match(/\b\w+\b/g) || [];
     let positiveCount = 0;
@@ -201,61 +274,75 @@ function updateSentimentAnalysis(text) {
         if (negativeWords.includes(word)) negativeCount++;
     }
     
-    // Update DOM
-    document.getElementById('positiveWords').textContent = positiveCount;
-    document.getElementById('negativeWords').textContent = negativeCount;
+    // Animate counts
+    animateValue(document.getElementById('positiveWords'), 0, positiveCount, 500);
+    animateValue(document.getElementById('negativeWords'), 0, negativeCount, 500);
     
+    // Update sentiment indicator with animation
     const sentimentIndicator = document.getElementById('sentimentIndicator');
-    sentimentIndicator.classList.remove('positive', 'neutral', 'negative');
+    sentimentIndicator.style.opacity = '0';
     
-    if (positiveCount > negativeCount) {
-        sentimentIndicator.classList.add('positive');
-        sentimentIndicator.textContent = 'Positive';
-    } else if (negativeCount > positiveCount) {
-        sentimentIndicator.classList.add('negative');
-        sentimentIndicator.textContent = 'Negative';
-    } else {
-        sentimentIndicator.classList.add('neutral');
-        sentimentIndicator.textContent = 'Neutral';
-    }
+    setTimeout(() => {
+        sentimentIndicator.classList.remove('positive', 'neutral', 'negative');
+        
+        if (positiveCount > negativeCount) {
+            sentimentIndicator.classList.add('positive');
+            sentimentIndicator.textContent = 'Positive';
+        } else if (negativeCount > positiveCount) {
+            sentimentIndicator.classList.add('negative');
+            sentimentIndicator.textContent = 'Negative';
+        } else {
+            sentimentIndicator.classList.add('neutral');
+            sentimentIndicator.textContent = 'Neutral';
+        }
+        
+        sentimentIndicator.style.opacity = '1';
+    }, 250);
 }
 
-// Update word frequency analysis
+// Update word frequency with animation
 function updateWordFrequency(text) {
     const words = text.toLowerCase().match(/\b\w+\b/g) || [];
     const wordFreq = {};
     
-    // Count word frequency
     words.forEach(word => {
-        if (word.length > 2) { // Ignore very short words
+        if (word.length > 2) {
             wordFreq[word] = (wordFreq[word] || 0) + 1;
         }
     });
     
-    // Sort by frequency
     const sortedWords = Object.entries(wordFreq)
         .sort(([,a], [,b]) => b - a)
-        .slice(0, 10); // Top 10 words
+        .slice(0, 10);
     
-    // Update DOM
     const wordFreqContainer = document.getElementById('wordFrequency');
     if (wordFreqContainer) {
         wordFreqContainer.innerHTML = sortedWords
-            .map(([word, count]) => `<div class="metric">
-                <div class="metric-title">${word}</div>
-                <div>${count} occurrences</div>
-            </div>`)
+            .map(([word, count], index) => `
+                <div class="metric" style="animation-delay: ${index * 50}ms">
+                    <div class="metric-title">${word}</div>
+                    <div class="metric-value">${count} occurrences</div>
+                </div>
+            `)
             .join('');
     }
 }
 
-// Handle clear button
+// Handle clear button with animation
 function handleClear() {
-    textInput.value = '';
-    results.style.display = 'none';
-    hideError();
-    updateCharCount(0);
-    textInput.focus();
+    // Fade out results
+    results.style.opacity = '0';
+    results.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+        textInput.value = '';
+        results.style.display = 'none';
+        results.style.opacity = '1';
+        results.style.transform = 'translateY(0)';
+        hideError();
+        updateCharCount(0);
+        textInput.focus();
+    }, 300);
 }
 
 // Handle text input
