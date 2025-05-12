@@ -1,24 +1,87 @@
+/* Theme variables */
+:root {
+    --bg-color: #f5f5f7;
+    --container-bg: white;
+    --text-color: #333;
+    --heading-color: #2c3e50;
+    --metric-bg: #e8f4fc;
+    --metric-border: #3498db;
+    --metric-title-color: #2c3e50;
+    --button-bg: #3498db;
+    --button-hover: #2980b9;
+    --button-disabled: #bdc3c7;
+    --result-bg: #f9f9f9;
+    --positive-bg: #d4edda;
+    --positive-color: #155724;
+    --neutral-bg: #e2e3e5;
+    --neutral-color: #383d41;
+    --negative-bg: #f8d7da;
+    --negative-color: #721c24;
+    --error-bg: #f8d7da;
+    --error-color: #721c24;
+    --error-border: #f5c6cb;
+    --tooltip-bg: #333;
+    --tooltip-color: white;
+    --footer-color: #777;
+    --textarea-border: #ddd;
+    --loading-spinner-border: #f3f3f3;
+    --loading-spinner-color: #3498db;
+}
+
+/* Dark mode variables */
+[data-theme="dark"] {
+    --bg-color: #1a1a1a;
+    --container-bg: #2d2d2d;
+    --text-color: #e0e0e0;
+    --heading-color: #ffffff;
+    --metric-bg: #3d3d3d;
+    --metric-border: #4a9eff;
+    --metric-title-color: #ffffff;
+    --button-bg: #4a9eff;
+    --button-hover: #357abd;
+    --button-disabled: #666666;
+    --result-bg: #3d3d3d;
+    --positive-bg: #1e4620;
+    --positive-color: #a3d9a5;
+    --neutral-bg: #4a4a4a;
+    --neutral-color: #e0e0e0;
+    --negative-bg: #462020;
+    --negative-color: #d9a3a3;
+    --error-bg: #462020;
+    --error-color: #d9a3a3;
+    --error-border: #8b3d3d;
+    --tooltip-bg: #4a4a4a;
+    --tooltip-color: #ffffff;
+    --footer-color: #999;
+    --textarea-border: #4a4a4a;
+    --loading-spinner-border: #3d3d3d;
+    --loading-spinner-color: #4a9eff;
+}
+
+/* Apply theme variables */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
-    color: #333;
+    color: var(--text-color);
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
-    background-color: #f5f5f7;
+    background-color: var(--bg-color);
+    transition: background-color 0.3s, color 0.3s;
 }
 
 h1 {
-    color: #2c3e50;
+    color: var(--heading-color);
     text-align: center;
     margin-bottom: 30px;
 }
 
 .container {
-    background-color: white;
+    background-color: var(--container-bg);
     border-radius: 8px;
     padding: 25px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
 }
 
 textarea {
@@ -26,15 +89,18 @@ textarea {
     height: 200px;
     padding: 12px;
     margin-bottom: 20px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--textarea-border);
     border-radius: 4px;
     resize: vertical;
     font-family: inherit;
     font-size: 16px;
+    background-color: var(--container-bg);
+    color: var(--text-color);
+    transition: border-color 0.3s, background-color 0.3s, color 0.3s;
 }
 
 button {
-    background-color: #3498db;
+    background-color: var(--button-bg);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -45,12 +111,42 @@ button {
 }
 
 button:hover {
-    background-color: #2980b9;
+    background-color: var(--button-hover);
 }
 
 button:disabled {
-    background-color: #bdc3c7;
+    background-color: var(--button-disabled);
     cursor: not-allowed;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--button-bg);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    z-index: 1000;
+}
+
+.theme-toggle:hover {
+    background-color: var(--button-hover);
+    transform: scale(1.1);
+}
+
+.theme-toggle svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
 }
 
 .results {
@@ -62,12 +158,13 @@ button:disabled {
     margin-bottom: 20px;
     padding: 15px;
     border-radius: 4px;
-    background-color: #f9f9f9;
+    background-color: var(--result-bg);
+    transition: background-color 0.3s;
 }
 
 .result-item h3 {
     margin-top: 0;
-    color: #2c3e50;
+    color: var(--heading-color);
     font-size: 18px;
 }
 
@@ -78,16 +175,17 @@ button:disabled {
 }
 
 .metric {
-    background-color: #e8f4fc;
+    background-color: var(--metric-bg);
     padding: 12px;
     border-radius: 4px;
-    border-left: 4px solid #3498db;
+    border-left: 4px solid var(--metric-border);
+    transition: background-color 0.3s, border-color 0.3s;
 }
 
 .metric-title {
     font-weight: bold;
     margin-bottom: 5px;
-    color: #2c3e50;
+    color: var(--metric-title-color);
 }
 
 .sentiment {
@@ -99,25 +197,25 @@ button:disabled {
 }
 
 .positive {
-    background-color: #d4edda;
-    color: #155724;
+    background-color: var(--positive-bg);
+    color: var(--positive-color);
 }
 
 .neutral {
-    background-color: #e2e3e5;
-    color: #383d41;
+    background-color: var(--neutral-bg);
+    color: var(--neutral-color);
 }
 
 .negative {
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: var(--negative-bg);
+    color: var(--negative-color);
 }
 
 .footer {
     text-align: center;
     margin-top: 30px;
     font-size: 14px;
-    color: #777;
+    color: var(--footer-color);
 }
 
 /* Loading state styles */
@@ -128,8 +226,8 @@ button:disabled {
 }
 
 .loading-spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #3498db;
+    border: 4px solid var(--loading-spinner-border);
+    border-top: 4px solid var(--loading-spinner-color);
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -167,8 +265,8 @@ button:disabled {
     left: 50%;
     transform: translateX(-50%);
     padding: 5px 10px;
-    background-color: #333;
-    color: white;
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-color);
     border-radius: 4px;
     font-size: 14px;
     white-space: nowrap;
@@ -184,9 +282,9 @@ button:disabled {
 
 /* Error message styles */
 .error-message {
-    color: #721c24;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
+    color: var(--error-color);
+    background-color: var(--error-bg);
+    border: 1px solid var(--error-border);
     padding: 10px;
     border-radius: 4px;
     margin: 10px 0;

@@ -1,6 +1,7 @@
 // Constants
 const MAX_TEXT_LENGTH = 100000; // Maximum text length to prevent performance issues
 const DEBOUNCE_DELAY = 300; // Delay for debouncing text input
+const THEME_STORAGE_KEY = 'textAnalyzerTheme'; // Key for storing theme preference
 
 // Word lists for sentiment analysis
 const positiveWords = [
@@ -20,13 +21,14 @@ const negativeWords = [
 ];
 
 // DOM Elements
-let analyzeBtn, clearBtn, results, textInput, loadingSpinner, errorMessage, charCountDisplay;
+let analyzeBtn, clearBtn, results, textInput, loadingSpinner, errorMessage, charCountDisplay, themeToggle;
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     initializeElements();
     setupEventListeners();
     setupAccessibility();
+    initializeTheme();
 });
 
 // Initialize DOM elements
@@ -38,6 +40,7 @@ function initializeElements() {
     loadingSpinner = document.getElementById('loadingSpinner');
     errorMessage = document.getElementById('errorMessage');
     charCountDisplay = document.getElementById('charCountDisplay');
+    themeToggle = document.getElementById('themeToggle');
 }
 
 // Setup event listeners
@@ -46,6 +49,7 @@ function setupEventListeners() {
     clearBtn.addEventListener('click', handleClear);
     textInput.addEventListener('input', debounce(handleTextInput, DEBOUNCE_DELAY));
     textInput.addEventListener('keydown', handleKeyPress);
+    themeToggle.addEventListener('click', toggleTheme);
 }
 
 // Setup accessibility features
@@ -380,4 +384,50 @@ function getReadabilityInterpretation(score) {
     if (score >= 50) return 'Fairly difficult to read.';
     if (score >= 30) return 'Difficult to read. Best understood by college graduates.';
     return 'Very difficult to read. Best understood by university graduates.';
+}
+
+// Initialize theme from storage or system preference
+function initializeTheme() {
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme) {
+        setTheme(savedTheme);
+    } else if (prefersDark) {
+        setTheme('dark');
+    }
+    
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (!localStorage.getItem(THEME_STORAGE_KEY)) {
+            setTheme(e.matches ? 'dark' : 'light');
+        }
+    });
+}
+
+// Toggle between light and dark themes
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+}
+
+// Set the theme and update UI
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+    
+    // Update theme toggle button icons
+    const sunIcon = themeToggle.querySelector('.sun-icon');
+    const moonIcon = themeToggle.querySelector('.moon-icon');
+    
+    if (theme === 'dark') {
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'block';
+        themeToggle.setAttribute('aria-label', 'Switch to light mode');
+    } else {
+        sunIcon.style.display = 'block';
+        moonIcon.style.display = 'none';
+        themeToggle.setAttribute('aria-label', 'Switch to dark mode');
+    }
 } 
