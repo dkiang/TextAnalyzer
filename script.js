@@ -417,17 +417,21 @@ function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem(THEME_STORAGE_KEY, theme);
     
-    // Update theme toggle button icons
+    // Update theme toggle button
+    const themeToggle = document.getElementById('themeToggle');
     const sunIcon = themeToggle.querySelector('.sun-icon');
     const moonIcon = themeToggle.querySelector('.moon-icon');
+    const themeText = themeToggle.querySelector('.theme-toggle-text');
     
     if (theme === 'dark') {
         sunIcon.style.display = 'none';
         moonIcon.style.display = 'block';
+        themeText.textContent = 'Light Mode';
         themeToggle.setAttribute('aria-label', 'Switch to light mode');
     } else {
         sunIcon.style.display = 'block';
         moonIcon.style.display = 'none';
+        themeText.textContent = 'Dark Mode';
         themeToggle.setAttribute('aria-label', 'Switch to dark mode');
     }
 } 
